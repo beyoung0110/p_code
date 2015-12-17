@@ -1,63 +1,88 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+typedef enum {
+    false, 
+    true
+} bool;
 
+typedef struct trieNode* TrieNode;
 struct trieNode {
-    TrieNode* trieNode;
-    int trieNum;
-    int prefix;
-    char value;
-    bool isWord;
-} TrieNode
+    TrieNode    trieNode;   // child node
+    int         trieNum;    // child node number.
+    int         prefixNum;  // words number that begin with this value.
+    char        value;      // value of the node.
+    bool        isWord;     // contains current value is a word.
+};
+
+TrieNode initTrieNode() {
+    TrieNode trieNodeNew    = (TrieNode) malloc(sizeof(struct trieNode));
+    trieNodeNew->trieNode   = (TrieNode) malloc(26*sizeof(struct trieNode));
+    trieNodeNew->trieNum    = 0;
+    trieNodeNew->prefixNum  = 0;
+    trieNodeNew->value      = 0x0;
+    trieNodeNew->isWord     = false;
+    return trieNodeNew;
+}
+void buildTrieTree(char* nextValues, TrieNode parentNode) {
+    bool needAddNew = true;
+    int i = 0;
+    if(nextValues == NULL || (strncmp(nextValues, "", 1) == 0 )) {
+        if(parentNode == NULL) {
+            return;
+        } else {
+           parentNode->isWord = true;
+           return;
+        }
+    }
+
+    int num = parentNode->trieNum;
+    for(i = 0; i < num; i++) {
+        if(parentNode->trieNode[num].value == nextValues[0]) {
+            needAddNew = false;
+            parentNode->trieNode[i].prefixNum++;
+            buildTrieTree(&nextValues[1], &parentNode->trieNode[i]);
+        }
+    }
+
+    if (needAddNew) {
+        parentNode->trieNum++;
+        parentNode->trieNode[num].prefixNum = 1;
+        parentNode->trieNode[num].value = nextValues[0];
+        parentNode->trieNode[num].trieNode = (TrieNode) malloc(26*sizeof(struct trieNode));
+        buildTrieTree(&nextValues[1], &parentNode->trieNode[num]);
+    }
+    return ;
+}
+
+//void findPrefixNumInTrieTree(char* input, TrieNode* trieTree) {
+//}
 
 int main() {
-    char* input;
-    TrieNode* trieTree;
     int num = 0;
+    char *input = NULL;
+    TrieNode root = NULL;
 
-    trieTree = (TreeNode *) malloc(sizeof(TrieNode));
+    root = initTrieNode(); 
 
     scanf("%d", &num);
-    while(num >= 0) {
+    while(num > 0) {
         scanf("%s", input);
-        buildTrieTree(input, trieTree);
+        buildTrieTree(input, root);
+        num--;
     }
 
-    while(input) {
-        findPrefixNumInTrieTree(input, trieTree);
-    }
+    scanf("%s", input);
+/*    char *input1 = "fs";
+    char *input2 = "fsd";
+    TrieNode root = NULL;
+    root = initTrieNode(); 
+    buildTrieTree(input1, root);
+    buildTrieTree(input2, root);
+*/
+    //    findPrefixNumInTrieTree(input, trieTree);
 
     return 0;
 }
 
-void buildTrieTree(char* input, TrieNode* trieTree) {
-    if(intput == NULL) {
-        if(trieTree == NULL) {
-            return;
-        } else {
-           trieTree->isWord = true;
-        }
-    }
 
-    int num = trieTree->trieNum - 1;
-    while(num >= 0){
-        if(trieTree->trieNode[num].value == *input) {
-            trieTree->trieNode[num]->prefix++;
-            buildTrieTree(&input[num+1], &trieTree[num]);
-        }
-        num--;
-    }
-
-    TrieNode *trieNodeNew = (TreeNode *) malloc(sizeof(TrieNode));
-    trieNodeNew->trieNode = NULL;
-    trieNodeNew->trieNum  = 0;
-    trieNodeNew->prefix   = 1;
-    trieNodeNew->value    = *input;
-    trieNodeNew->isWord   = false;
-
-    trieTree->trieNode[trieTree->trieNum++] = trieNodeNew;
-    buildTrieTree(&input[num+1], &trieTree[num])
-    
-}
-
-void findPrefixNumInTrieTree(char* input, TrieNode* trieTree) {
-
-}

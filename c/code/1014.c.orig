@@ -1,0 +1,89 @@
+#include<stdlib.h>
+#include<stdio.h>
+#include<string.h>
+#define MAX 26
+typedef enum {
+    false,
+    true
+} bool;
+
+typedef struct TrieNode {
+    bool isStr;
+    int len;
+    struct TrieNode *next[MAX];
+} Trie;
+
+void insert(Trie *root, const char *s) {
+    if(root == NULL || *s == '\0')
+        return;
+    int i;
+    Trie *p = root;
+    while(*s != '\0') {
+        int t = *s - 'a';
+        if(p->next[t] == NULL) {
+            Trie *temp = (Trie *)malloc(sizeof(Trie));
+            for(i = 0; i < MAX; i++) {
+                temp->next[i] = NULL;
+            }
+            temp->len = 0;
+            temp->isStr = false;
+            p->next[t] = temp; //soga!!!!!!!
+        }
+        p = p->next[t];
+        p->len++;
+        s++;
+    }
+    p->isStr = true;
+    return;
+}
+
+int search(Trie *root, const char *s) {
+    Trie *p = root;
+    while(p != NULL && *s != '\0') {
+        int t = *s - 'a';
+        if(p->next[t] == NULL)
+            return 0;
+        p = p->next[t];
+        s++;
+    }
+    return p->len;
+}
+
+void del(Trie *root) {
+    int i;
+    for(i = 0; i < MAX; i++) {
+        if (root->next[i] != NULL) {
+            del(root->next[i]);
+        }
+    }
+    free(root);
+}
+
+int main(int argc, char *argv[]){
+    int i;
+    int n, m;
+    int num;
+    char s[100];
+    //init root
+    Trie *root = (Trie *)malloc(sizeof(Trie));
+    for(i = 0; i < MAX; i++) {
+        root->next[i] = NULL;
+    }
+    root->isStr = false;
+    //insert
+    scanf("%d", &n);
+    for(i = 0; i < n; i++){
+        scanf("%s", s);
+        insert(root, s);
+    }
+    //search
+    scanf("%d", &m);
+    for(i = 0; i < m; i++){
+        scanf("%s", s);
+        num = search(root, s);
+        printf("%d\n", num);
+    }
+    printf("\n");
+    del(root);
+    return 0;
+}    

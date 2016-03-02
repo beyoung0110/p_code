@@ -61,6 +61,17 @@ int findPrefixNumInTrieTree(const char* input, TrieNode root) {
     return p->len;
 }
 
+void destoryTrieTree(TrieNode root) {
+    int i = 0;
+    for(i = 0; i < MAX; i++) {
+        if(root->trieNode[i] != NULL) {
+            destoryTrieTree(root->trieNode[i]);
+        }
+    }
+    free(root);
+    return;
+}
+
 int main() {
     int num     = 0;
     int len     = 0; 
@@ -84,5 +95,6 @@ int main() {
         num--;
     }
     printf("\n");
+    destoryTrieTree(root);
     return 0;
 }

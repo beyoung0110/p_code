@@ -2,21 +2,15 @@
 #include <stdlib.h>
 #include <string.h> 
 #include <netinet/in.h>
+#include <dirent.h>
+#include <fcntl.h>
 
 int ftp_start();
+void commd_ls(int sockfd);
+void commd_put(int sockfd, char *filename);
 
 int main() {
-
     ftp_start();
-//    while(1) {
-//        ftp_listen();
-//        ftp_download();
-//        ftp_upload();
-//        ftp_list();
-//        ftp_delete();
-//        ftp_login();
-//        ftp_logout();
-//    }
     return 0;
 }
 
@@ -75,20 +69,76 @@ int ftp_start() {
             printf("Read Command Error!\n");
             exit(1);
         }
+        printf("Recive [%s]\n", commd);
 
-        printf("Recive [%s] \n", commd);
+        if(strncmp(commd, "ls", 2) == 0) {
+            commd_ls(cli_sockfd);
+        } else if(strncmp(commd, "put", 3) == 0) {
+            commd_put(cli_sockfd, commd + 4);
+        }
 
-        if(write(cli_sockfd, commd, 50) < 0) {
+/*        if(write(cli_sockfd, commd, 50) < 0) {
             printf("Write Error!\n");
             exit(1);
         }
-
         close(cli_sockfd);
+*/
    }
 
     return 0;
 }
 
-int ftp_download(char *path, char *filename) {
-    return 0;
+void commd_ls(int sockfd) {
+    DIR *mydir =NULL;
+    struct dirent *myitem = NULL;
+    char commd[50] ;
+    bzero(commd, 50);
+
+    if((mydir=opendir(".")) == NULL)
+    {
+        printf("OpenDir Error!\n");
+        exit(1);
+    }
+
+    while((myitem = readdir(mydir)) != NULL)
+    {
+        if(sprintf(commd, myitem->d_name, 50) < 0)
+        {
+            printf("Sprintf Error!\n");
+            exit(1);
+        }
+        if(write(sockfd, commd, 50) < 0 )
+        {
+            printf("Write Error!\n");
+            exit(1);
+        }
+    }
+    closedir(mydir);
+    close(sockfd);
+    return ;
+}
+
+void commd_put(int sockfd, char *filename) {
+    int fd, nbytes;
+    char buffer[50];
+    bzero(buffer, 50);    
+
+    printf("get filename : [ %s ]\n", filename);
+    if((fd=open(filename, O_WRONLY|O_CREAT|O_TRUNC, 0644)) < 0)
+    {
+        printf("Open file Error!\n");
+        return ;
+    }
+    while((nbytes=read(sockfd, buffer, 50)) > 0)
+    {
+        if(write(fd, buffer, nbytes) < 0)
+        {
+            printf("Write Error! At commd_put 1!\n");
+            close(fd);
+            exit(1);
+        }
+    }
+    close(fd);
+    close(sockfd);
+    return ;
 }
